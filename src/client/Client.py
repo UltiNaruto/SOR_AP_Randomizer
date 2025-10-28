@@ -1,11 +1,12 @@
 import logging
 import re
-from typing import Optional
+from typing import Any, List, Optional
 
 from .Context import StreetsOfRageContext
 from .GameInterface import GameInterface
 from ..Utils import items_start_id, locations_start_id, MAGIC_EMPTY_SEED, STAGES
 
+from CommonClient import ClientCommandProcessor
 from NetUtils import ClientStatus
 # noinspection PyProtectedMember
 from worlds._bizhawk import (
@@ -22,6 +23,28 @@ from worlds._bizhawk.client import BizHawkClient
 logger = logging.getLogger("Client")
 
 
+def display_stages_access(ctx: StreetsOfRageContext):
+    logger.info('You have access to :')
+    for i in range(8):
+        if ctx.stage_keys[STAGES[i]]:
+            logger.info(f'- {STAGES[i]}')
+
+
+class StreetsOfRageCommandProcessor(ClientCommandProcessor):
+    ctx: "StreetsOfRageContext"
+
+    def __init__(self, ctx: "StreetsOfRageContext"):
+        # noinspection PyTypeChecker
+        super().__init__(ctx)
+
+    def _cmd_goal(self, *_args: List[Any]):
+        stages_to_clear = self.ctx.slot_data["stages_to_clear"]
+        logger.info(f'Your goal is to beat {stages_to_clear} stage{("s" if stages_to_clear > 1 else "")}')
+
+    def _cmd_keys(self, *_args: List[Any]):
+        display_stages_access(self.ctx)
+
+
 class StreetsOfRageClient(BizHawkClient):
     system = ('GEN',)
     patch_suffix = ('.apsor1',)
@@ -30,6 +53,7 @@ class StreetsOfRageClient(BizHawkClient):
     game_state: bool = False
     has_new_checks: bool = False
     game_interface: Optional[GameInterface] = None
+    command_processor = StreetsOfRageCommandProcessor
 
     @staticmethod
     async def get_rom_infos(ctx: StreetsOfRageContext) -> tuple[Optional[str], Optional[str], Optional[str]]:
@@ -110,6 +134,8 @@ class StreetsOfRageClient(BizHawkClient):
                         ctx.ui.json_to_kivy_parser(args['data'])
                     )
                     ctx.notifications.append(text)
+            if args['type'] == 'Tutorial':
+                display_stages_access(ctx)
 
         # noinspection PyTypeChecker
         super().on_package(ctx, cmd, args)
