@@ -3,6 +3,18 @@ import re
 
 MAGIC_EMPTY_SEED = ' ' * 20
 
+STAGES: list[str] = [
+    'Shopping Mall',
+    'Inner City Slums',
+    'Beachside',
+    'Bridge Under Construction',
+    'Aboard The Ferry',
+    'Factory',
+    'Elevator',
+    'Syndicate Mansion',
+    'Mr. X',
+]
+
 
 def condition_or(conditions: list[bool]) -> bool:
     result = False

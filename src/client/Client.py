@@ -4,7 +4,7 @@ from typing import Optional
 
 from .Context import StreetsOfRageContext
 from .GameInterface import GameInterface
-from ..Utils import MAGIC_EMPTY_SEED, items_start_id, locations_start_id
+from ..Utils import items_start_id, locations_start_id, MAGIC_EMPTY_SEED, STAGES
 
 from NetUtils import ClientStatus
 # noinspection PyProtectedMember
@@ -205,8 +205,8 @@ class StreetsOfRageClient(BizHawkClient):
             # Stage key received
             if 12 <= idx <= 19:
                 key_idx = idx - 12
-                if not ctx.stage_keys[self.game_interface.stages[key_idx]]:
-                    ctx.stage_keys[self.game_interface.stages[key_idx]] = True
+                if not ctx.stage_keys[STAGES[key_idx]]:
+                    ctx.stage_keys[STAGES[key_idx]] = True
 
             # Do not receive the same item twice
             if it_idx <= self.game_interface.save_data['last_received_item']:
@@ -230,24 +230,24 @@ class StreetsOfRageClient(BizHawkClient):
                 for j in range(start_idx, end_idx):
                     loc_id = locations_start_id() + j
                     # Check if location for stage object was not sent
-                    if j in self.game_interface.save_data['stages_objects_cleared'][self.game_interface.stages[i]] and \
+                    if j in self.game_interface.save_data['stages_objects_cleared'][STAGES[i]] and \
                        loc_id not in ctx.checked_locations:
                         ctx.locations_checked.add(loc_id)
                     # Check if location for stage object was not collected
-                    if j not in self.game_interface.save_data['stages_objects_cleared'][self.game_interface.stages[i]] and \
+                    if j not in self.game_interface.save_data['stages_objects_cleared'][STAGES[i]] and \
                        loc_id in ctx.checked_locations:
-                        self.game_interface.save_data['stages_objects_cleared'][self.game_interface.stages[i]].append(j)
+                        self.game_interface.save_data['stages_objects_cleared'][STAGES[i]].append(j)
                         collected_location = True
 
             loc_id = locations_start_id() + self.game_interface.stage_clear_loc_idx[i]
             # Check if location for stage clear was not sent
             if not loc_id in ctx.checked_locations and \
-               self.game_interface.save_data['stages_cleared'][self.game_interface.stages[i]]:
+               self.game_interface.save_data['stages_cleared'][STAGES[i]]:
                 ctx.locations_checked.add(loc_id)
             # Check if location for stage clear was not collected
             if loc_id in ctx.checked_locations and \
-               not self.game_interface.save_data['stages_cleared'][self.game_interface.stages[i]]:
-                self.game_interface.save_data['stages_cleared'][self.game_interface.stages[i]] = True
+               not self.game_interface.save_data['stages_cleared'][STAGES[i]]:
+                self.game_interface.save_data['stages_cleared'][STAGES[i]] = True
                 collected_location = True
 
         if len(ctx.locations_checked) > 0:
@@ -269,7 +269,7 @@ class StreetsOfRageClient(BizHawkClient):
         requested_stage = await self.game_interface.get_requested_stage()
         if requested_stage is not None and requested_stage > 0:
             if requested_stage < 9:
-                stage_name = self.game_interface.stages[requested_stage - 1]
+                stage_name = STAGES[requested_stage - 1]
                 if ctx.stage_keys[stage_name]:
                     await self.game_interface.set_requested_stage_response(0xFF)
                     await self.game_interface.go_to_1player()

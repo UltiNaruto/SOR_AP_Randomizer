@@ -12,23 +12,12 @@ from worlds._bizhawk import (
     SyncError,
 )
 from .Context import StreetsOfRageContext
-from ..Utils import MAGIC_EMPTY_SEED
+from ..Utils import MAGIC_EMPTY_SEED, STAGES
 
 
 class GameInterface:
     ctx: StreetsOfRageContext
     current_stage: Optional[int] = None
-    stages: list[str] = [
-        'Shopping Mall',
-        'Inner City Slums',
-        'Beachside',
-        'Bridge Under Construction',
-        'Aboard The Ferry',
-        'Factory',
-        'Elevator',
-        'Syndicate Mansion',
-        'Mr. X',
-    ]
     player: dict[str, int | bytes] = {}
     prev_game_status: int = 0
     prev_menu_state: int = 0
@@ -486,14 +475,14 @@ class GameInterface:
 
             self.save_data['last_received_item'] = struct.unpack('>i', sram[0x08:0x0C])[0]
             for i in range(9):
-                self.save_data['stages_cleared'][self.stages[i]] = sram[0x0C+i] > 0
+                self.save_data['stages_cleared'][STAGES[i]] = sram[0x0C+i] > 0
             for i in range(8):
                 if self.stage_objects_start_loc_idx[i] == -1:
                     continue
                 tmp = struct.unpack('>H', sram[0x18+i*2:0x18+(i+1)*2])[0]
                 for j in range(15):
                     if tmp & 1 == 1:
-                        self.save_data['stages_objects_cleared'][self.stages[i]].append(self.stage_objects_start_loc_idx[i] + j)
+                        self.save_data['stages_objects_cleared'][STAGES[i]].append(self.stage_objects_start_loc_idx[i] + j)
                     tmp >>= 1
                     # no need to check further if the value is already 0
                     if tmp == 0:
@@ -547,7 +536,7 @@ class GameInterface:
         try:
             stages_cleared = [0] * 9
             for i in range(9):
-                if self.save_data['stages_cleared'][self.stages[i]]:
+                if self.save_data['stages_cleared'][STAGES[i]]:
                     stages_cleared[i] = 1
 
             stages_objects_cleared = [0] * 16
@@ -555,7 +544,7 @@ class GameInterface:
                 if self.stage_objects_start_loc_idx[i] == -1:
                     continue
                 tmp = 0
-                for stage_object in self.save_data['stages_objects_cleared'][self.stages[i]]:
+                for stage_object in self.save_data['stages_objects_cleared'][STAGES[i]]:
                     tmp |= (1 << (stage_object - self.stage_objects_start_loc_idx[i]))
                 tmp2 = struct.pack('>h', tmp)
                 stages_objects_cleared[i * 2] = tmp2[0]
