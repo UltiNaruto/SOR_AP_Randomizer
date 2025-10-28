@@ -1,0 +1,9 @@
+.git*
+__pycache__
+build
+LICENSE
+README.md
+requirements.txt
+Streets of Rage.yaml
+*.md
+test

@@ -1,0 +1,112 @@
+{
+  "Nothing": {
+    "index": 0,
+    "default_shuffled_count": 8,
+    "progression": "filler"
+  },
+  "Chicken": {
+    "index": 1,
+    "default_shuffled_count": 13,
+    "progression": "useful"
+  },
+  "Apple": {
+    "index": 2,
+    "default_shuffled_count": 10,
+    "progression": "useful"
+  },
+  "Extra Life": {
+    "index": 3,
+    "default_shuffled_count": 3,
+    "progression": "useful"
+  },
+  "Police": {
+    "index": 4,
+    "default_shuffled_count": 2,
+    "progression": "useful"
+  },
+  "Knife": {
+    "index": 5,
+    "default_shuffled_count": 2,
+    "progression": "useful"
+  },
+  "Bottle": {
+    "index": 6,
+    "default_shuffled_count": 5,
+    "progression": "useful"
+  },
+  "Baseball Bat": {
+    "index": 7,
+    "default_shuffled_count": 1,
+    "progression": "useful"
+  },
+  "Pipe": {
+    "index": 8,
+    "default_shuffled_count": 4,
+    "progression": "useful"
+  },
+  "Sleeping Powder": {
+    "index": 9,
+    "default_shuffled_count": 6,
+    "progression": "useful"
+  },
+  "1000 Points": {
+    "index": 10,
+    "default_shuffled_count": 7,
+    "progression": "filler"
+  },
+  "5000 Points": {
+    "index": 11,
+    "default_shuffled_count": 1,
+    "progression": "filler"
+  },
+  "Shopping Mall Key": {
+    "index": 12,
+    "default_shuffled_count": 1,
+    "progression": "progression_skip_balancing"
+  },
+  "Inner City Slums Key": {
+    "index": 13,
+    "default_shuffled_count": 1,
+    "progression": "progression_skip_balancing"
+  },
+  "Beachside Key": {
+    "index": 14,
+    "default_shuffled_count": 1,
+    "progression": "progression_skip_balancing"
+  },
+  "Bridge Under Construction Key": {
+    "index": 15,
+    "default_shuffled_count": 1,
+    "progression": "progression_skip_balancing"
+  },
+  "Aboard The Ferry Key": {
+    "index": 16,
+    "default_shuffled_count": 1,
+    "progression": "progression_skip_balancing"
+  },
+  "Factory Key": {
+    "index": 17,
+    "default_shuffled_count": 1,
+    "progression": "progression_skip_balancing"
+  },
+  "Elevator Key": {
+    "index": 18,
+    "default_shuffled_count": 1,
+    "progression": "progression_skip_balancing"
+  },
+  "Syndicate Mansion Key": {
+    "index": 19,
+    "default_shuffled_count": 1,
+    "progression": "progression_skip_balancing"
+  },
+  "Game Over Trap": {
+    "index": 20,
+    "default_shuffled_count": 0,
+    "progression": "trap"
+  },
+  "Death Trap": {
+    "index": 21,
+    "default_shuffled_count": 0,
+    "progression": "trap"
+  }
+}
