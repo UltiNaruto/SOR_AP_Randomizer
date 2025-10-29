@@ -6,20 +6,21 @@ import random
 from pathlib import Path
 from typing import ClassVar
 
-from .client.Client import StreetsOfRageClient
+from BaseClasses import ItemClassification, Item, Location, MultiWorld, Tutorial
+from Options import Toggle
+from worlds.AutoWorld import World, WebWorld
+
 from .logic import locations_, regions_, set_rules
 
 from .Items import StreetsOfRageItem
 from .Options import StreetsOfRageOptions, streets_of_rage_option_groups
 from .Rom import StreetsOfRageProcedurePatch
 from .Settings import StreetsOfRageSettings
-from .Utils import items_start_id, locations_start_id
-
-from BaseClasses import ItemClassification, Item, Location, MultiWorld, Tutorial
-from Options import Toggle
-from ..AutoWorld import World, WebWorld
+from .Utils import items_start_id, locations_start_id, STAGES
 
 logger = logging.getLogger("Streets of Rage")
+
+from . import client
 
 
 # Will be removed once merged into Archipelago repo
@@ -65,18 +66,8 @@ class StreetsOfRageWorld(World):
     web = StreetsOfRageWeb()
     required_client_version = (0, 6, 3)
 
-    apworld_version = (0, 0, 1)
+    apworld_version = (0, 0, 2)
     starting_location: str = 'Shopping Mall'
-    starting_locations: list[str] = [
-        'Shopping Mall',
-        'Inner City Slums',
-        'Beachside',
-        'Bridge Under Construction',
-        'Aboard The Ferry',
-        'Factory',
-        'Elevator',
-        'Syndicate Mansion',
-    ]
     seed: int
 
     def __init__(self, multiworld: "MultiWorld", player: int):
@@ -86,7 +77,7 @@ class StreetsOfRageWorld(World):
 
     def generate_early(self) -> None:
         self.seed = self.random.randrange(99999999)
-        self.starting_location = self.starting_locations[self.options.start_location.value]
+        self.starting_location = STAGES[self.options.start_location.value]
         self.push_precollected(self.create_item(f'{self.starting_location} Key'))
 
     def create_items(self) -> None:

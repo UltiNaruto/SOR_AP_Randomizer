@@ -1,5 +1,5 @@
 import re
-
+from typing import Optional
 
 MAGIC_EMPTY_SEED = ' ' * 20
 
@@ -50,3 +50,11 @@ def strip_description_from_region_name(region_name: str):
         tmp[0] = tmp[0].replace(f" ({part_to_remove[0]})", "").strip()
 
     return tmp[0]
+
+
+def get_attempted_command(text: str) -> Optional[str]:
+    ret = re.match(r'^Could not find command (\w+)\. Known commands: (?:...)*', text)
+    if not ret:
+        return None
+    else:
+        return ret.group(1)

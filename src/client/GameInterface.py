@@ -1,24 +1,13 @@
 import struct
-from typing import Any, Optional
+from typing import Any, Optional, cast
+
+from ..Utils import MAGIC_EMPTY_SEED, STAGES
 
 # noinspection PyProtectedMember
-from worlds._bizhawk import (
-    display_message as bizhawk_display_msg,
-    read as bizhawk_read,
-    write as bizhawk_write,
-    ConnectorError,
-    NotConnectedError,
-    RequestFailedError,
-    SyncError,
-)
-from .Context import StreetsOfRageContext
-from ..Utils import MAGIC_EMPTY_SEED, STAGES
+import worlds._bizhawk as bizhawk
 
 
 class GameInterface:
-    ctx: StreetsOfRageContext
-    current_stage: Optional[int] = None
-    player: dict[str, int | bytes] = {}
     prev_game_status: int = 0
     prev_menu_state: int = 0
     save_data: dict[str, Any] = {}
@@ -46,143 +35,158 @@ class GameInterface:
     ]
     was_alive: bool = False
 
-    def __init__(self, ctx: StreetsOfRageContext):
-        self.ctx = ctx
-
-    async def update_current_stage(self, new_stage: int) -> None:
-        # Update current stage for PopTracker
-        if self.current_stage != new_stage:
-            self.current_stage = new_stage
-            await self.ctx.send_msgs([{
-                'cmd': 'Set',
-                'key': f'{self.ctx.slot}_{self.ctx.team}_streets_of_rage_area',
-                'default': 0,
-                'want_reply': True,
-                'operations': [{
-                    'operation': 'replace',
-                    'value': new_stage,
-                }]
-            }])
-
-    async def get_game_status(self) -> int:
+    @staticmethod
+    async def get_rom_infos(ctx) -> tuple[Optional[str], Optional[str], Optional[str]]:
         try:
-            status: list[bytes] = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            rom_infos = await bizhawk.read(ctx.bizhawk_ctx, [
+                (0x150, 0x30, 'MD CART'),
+                (0x180, 0x2, 'MD CART'),
+                (0x1B0, 0x2, 'MD CART'),
+            ])
+
+            if len(rom_infos) != 3:
+                raise bizhawk.RequestFailedError("Couldn't get rom infos!")
+
+            return (
+                    rom_infos[0].decode('utf-8').strip(' '),
+                    rom_infos[1].decode('utf-8').strip(' '),
+                    rom_infos[2].decode('utf-8').strip(' '),
+                   )
+        except bizhawk.ConnectorError:
+            raise RuntimeError
+        except bizhawk.NotConnectedError:
+            raise RuntimeError
+        except bizhawk.RequestFailedError:
+            raise RuntimeError
+        except bizhawk.SyncError:
+            raise RuntimeError
+
+    @staticmethod
+    async def get_game_status(ctx) -> int:
+        try:
+            status: list[bytes] = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0xFF01, 1, '68K RAM'),
             ])
 
             if len(status) <= 0:
-                raise RequestFailedError("Couldn't read game state!")
+                raise bizhawk.RequestFailedError("Couldn't read game state!")
 
             return status[0][0]
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return 0
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return 0
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return 0
-        except SyncError:
+        except bizhawk.SyncError:
             return 0
 
-    async def get_menu_state(self) -> int:
+    @staticmethod
+    async def get_menu_state(ctx) -> int:
         try:
-            status: list[bytes] = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            status: list[bytes] = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0xFB0F, 1, '68K RAM'),
             ])
 
             if len(status) <= 0:
-                raise RequestFailedError("Couldn't read game state!")
+                raise bizhawk.RequestFailedError("Couldn't read game state!")
 
             return status[0][0]
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return 0
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return 0
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return 0
-        except SyncError:
+        except bizhawk.SyncError:
             return 0
 
-    async def has_beaten_final_boss(self) -> Optional[int]:
+    @staticmethod
+    async def has_beaten_final_boss(ctx) -> Optional[int]:
         try:
-            final_boss_flag: list[bytes] = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            final_boss_flag: list[bytes] = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0x14, 1, 'SRAM'),
             ])
 
             if len(final_boss_flag) <= 0:
-                raise RequestFailedError("Couldn't read final boss flag!")
+                raise bizhawk.RequestFailedError("Couldn't read final boss flag!")
 
             return final_boss_flag[0][0] == 1
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return None
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return None
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return None
-        except SyncError:
+        except bizhawk.SyncError:
             return None
 
-    async def get_current_stage(self) -> Optional[int]:
+    @staticmethod
+    async def get_current_stage(ctx) -> Optional[int]:
         try:
-            current_stage: list[bytes] = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            current_stage: list[bytes] = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0xFF03, 1, '68K RAM'),
             ])
 
             if len(current_stage) <= 0:
-                raise RequestFailedError("Couldn't read current stage!")
+                raise bizhawk.RequestFailedError("Couldn't read current stage!")
 
             return current_stage[0][0]
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return None
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return None
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return None
-        except SyncError:
+        except bizhawk.SyncError:
             return None
 
-    async def get_requested_stage(self) -> Optional[int]:
+    @staticmethod
+    async def get_requested_stage(ctx) -> Optional[int]:
         try:
-            requested_stage: list[bytes] = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            requested_stage: list[bytes] = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0xFFFD, 1, '68K RAM'),
             ])
 
             if len(requested_stage) <= 0:
-                raise RequestFailedError("Couldn't read current stage!")
+                raise bizhawk.RequestFailedError("Couldn't read current stage!")
 
             return struct.unpack('b', requested_stage[0])[0]
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return None
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return None
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return None
-        except SyncError:
+        except bizhawk.SyncError:
             return None
 
-    async def set_requested_stage_response(self, response: int) -> Optional[bool]:
+    @staticmethod
+    async def set_requested_stage_response(ctx, response: int) -> Optional[bool]:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFFFD, [response], '68K RAM'),
             ])
 
             return True
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return None
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return None
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return None
-        except SyncError:
+        except bizhawk.SyncError:
             return None
 
-    async def get_players(self) -> list[dict[str, int | bytes]]:
+    @staticmethod
+    async def get_players(ctx) -> list[dict[str, int | bytes]]:
         try:
             entity_entries_addresses = [(i, 2, '68K RAM') for i in range(0xB800, 0xBA00, 0x80)]
-            entity_list_bytes: list[bytes] = await bizhawk_read(self.ctx.bizhawk_ctx, entity_entries_addresses)
+            entity_list_bytes: list[bytes] = await bizhawk.read(ctx.bizhawk_ctx, entity_entries_addresses)
             entity_entries_addresses = [addr for addr, _, _ in entity_entries_addresses]
 
             if len(entity_list_bytes) != len(entity_list_bytes):
-                raise RequestFailedError("Couldn't read entity list!")
+                raise bizhawk.RequestFailedError("Couldn't read entity list!")
 
             players = [{
                 'address': entity_entries_addresses[i],
@@ -193,18 +197,19 @@ class GameInterface:
             ]
 
             return players
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return []
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return []
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return []
-        except SyncError:
+        except bizhawk.SyncError:
             return []
 
-    async def get_entity(self, addr: int) -> Optional[dict[str, int]]:
+    @staticmethod
+    async def get_entity(ctx, addr: int) -> Optional[dict[str, int]]:
         try:
-            entity = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            entity = await bizhawk.read(ctx.bizhawk_ctx, [
                 (addr + 0x10, 2, '68K RAM'), # Position X
                 (addr + 0x14, 2, '68K RAM'), # Position Y
                 (addr + 0x30, 1, '68K RAM'), # Alive State
@@ -216,7 +221,7 @@ class GameInterface:
             ])
 
             if len(entity) <= 0:
-                raise RequestFailedError(f"Couldn't read entity at address RAM:{addr:04X}!")
+                raise bizhawk.RequestFailedError(f"Couldn't read entity at address RAM:{addr:04X}!")
 
             return {
                 'x': struct.unpack('>H', entity[0])[0],
@@ -228,154 +233,163 @@ class GameInterface:
                 'original_x': struct.unpack('>H', entity[6])[0],
                 'original_y': struct.unpack('>H', entity[7])[0],
             }
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return None
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return None
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return None
-        except SyncError:
+        except bizhawk.SyncError:
             return None
 
-    async def get_lives(self) -> int:
+    @staticmethod
+    async def get_lives(ctx) -> int:
         try:
-            lives = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            lives = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0xFF20, 1, '68K RAM'),
             ])
 
             if len(lives) <= 0:
-                raise RequestFailedError("Couldn't get number of lives!")
+                raise bizhawk.RequestFailedError("Couldn't get number of lives!")
 
             return struct.unpack('B', lives[0])[0]
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return 0
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return 0
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return 0
-        except SyncError:
+        except bizhawk.SyncError:
             return 0
 
-    async def get_police(self) -> int:
+    @staticmethod
+    async def get_police(ctx) -> int:
         try:
-            police = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            police = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0xFF21, 1, '68K RAM'),
             ])
 
             if len(police) <= 0:
-                raise RequestFailedError("Couldn't get number of lives!")
+                raise bizhawk.RequestFailedError("Couldn't get number of lives!")
 
             return struct.unpack('B', police[0])[0]
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return 0
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return 0
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return 0
-        except SyncError:
+        except bizhawk.SyncError:
             return 0
 
-    async def is_paused(self) -> bool:
+    @staticmethod
+    async def is_paused(ctx) -> bool:
         try:
-            paused: list[bytes] = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            paused: list[bytes] = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0xFA46, 1, '68K RAM'),
             ])
 
             if len(paused) <= 0:
-                raise RequestFailedError("Couldn't check paused state!")
+                raise bizhawk.RequestFailedError("Couldn't check paused state!")
 
             return paused[0] != b'\x00'
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return True
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return True
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return True
-        except SyncError:
+        except bizhawk.SyncError:
             return True
 
-    async def set_game_status(self, game_status: int) -> None:
+    @staticmethod
+    async def set_game_status(ctx, game_status: int) -> None:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFF01, [game_status], '68K RAM'),
             ])
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
 
-    async def set_menu_state(self, menu_state: int) -> None:
+    @staticmethod
+    async def set_menu_state(ctx, menu_state: int) -> None:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFB0F, [menu_state], '68K RAM'),
             ])
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
 
-    async def set_lives(self, lives: int) -> None:
+    @staticmethod
+    async def set_lives(ctx, lives: int) -> None:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFF20, [lives], '68K RAM'), # set lives
             ])
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
 
-    async def set_police(self, police: int) -> None:
+    @staticmethod
+    async def set_police(ctx, police: int) -> None:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFF21, [police], '68K RAM'), # set police count
             ])
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
 
-    async def add_score(self, val: int) -> bool:
+    @staticmethod
+    async def add_score(ctx, val: int) -> bool:
         try:
-            score = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            score = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0xFF08, 4, '68K RAM'),
             ])
 
             if len(score) != 1:
-                raise RequestFailedError("Couldn't get score!")
+                raise bizhawk.RequestFailedError("Couldn't get score!")
 
             score_val = struct.unpack('>I', score[0])[0]
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFF08, list(struct.pack('>I', score_val + val)), '68K RAM'),
             ])
             return True
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return False
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return False
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return False
-        except SyncError:
+        except bizhawk.SyncError:
             return False
 
-    async def is_alive(self) -> bool:
+    @staticmethod
+    async def is_alive(ctx, player: int) -> bool:
         try:
-            p1 = await self.get_entity(self.player['address'])
+            p1 = await GameInterface.get_entity(ctx, ctx.players[player - 1])
             if p1 is None:
                 return False
 
@@ -383,62 +397,65 @@ class GameInterface:
                 return False
 
             return True
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return False
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return False
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return False
-        except SyncError:
+        except bizhawk.SyncError:
             return False
 
-    async def kill(self) -> bool:
+    @staticmethod
+    async def kill(ctx) -> bool:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFA4A, [1], '68K RAM'), # Set timer to 1 frame
                 (0xFA49, [1], '68K RAM'), # Activate Time Over penalty which results in death
             ])
             return True
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return False
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return False
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return False
-        except SyncError:
+        except bizhawk.SyncError:
             return False
 
-    async def add_health(self, health: int) -> bool:
+    @staticmethod
+    async def add_health(ctx, player: int, health: int) -> bool:
         try:
-            entity = await self.get_entity(self.player['address'])
+            entity = await GameInterface.get_entity(ctx, ctx.players[player - 1]['address'])
 
             if entity is None:
-                raise RequestFailedError("Couldn't get entity!")
+                raise bizhawk.RequestFailedError("Couldn't get entity!")
 
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
-                (self.player['address'] + 0x33, [min(entity['health'] + health, 0x50)], '68K RAM'), # Set health
+            await bizhawk.write(ctx.bizhawk_ctx, [
+                (ctx.players[player - 1]['address'] + 0x33, [min(entity['health'] + health, 0x50)], '68K RAM'), # Set health
             ])
             return True
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             return False
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return False
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return False
-        except SyncError:
+        except bizhawk.SyncError:
             return False
 
-    async def read_save_to_sram(self) -> Optional[bool]:
+    @staticmethod
+    async def read_save_to_sram(ctx) -> Optional[dict[str, int|str|dict[str, list[int]|str]]]:
         try:
-            self.save_data = {
+            ret = {
                 'deathl': {
                     'in': 0,
                     'out': 0,
                 },
                 'deaths': 0,
                 'last_received_item': -1,
-                'seed_name': MAGIC_EMPTY_SEED if self.ctx.remote_seed_name is None else self.ctx.remote_seed_name,
-                'slot': -1 if self.ctx.slot is None else self.ctx.slot,
+                'seed_name': MAGIC_EMPTY_SEED if ctx.remote_seed_name is None else ctx.remote_seed_name,
+                'slot': -1 if ctx.slot is None else ctx.slot,
                 'stages_cleared': {
                     'Shopping Mall': False,
                     'Inner City Slums': False,
@@ -462,167 +479,200 @@ class GameInterface:
                 },
             }
 
-            sram_read_request: list[bytes] = await bizhawk_read(self.ctx.bizhawk_ctx, [
+            sram_read_request: list[bytes] = await bizhawk.read(ctx.bizhawk_ctx, [
                 (0, 0x6C, 'SRAM'),   # magic word
             ])
 
             if len(sram_read_request) != 1:
-                raise RequestFailedError("Couldn't read SRAM!")
+                raise bizhawk.RequestFailedError("Couldn't read SRAM!")
 
             sram = sram_read_request[0]
             if sram[0x00:0x04] != b'SOR1':
-                return False
+                return None
 
-            self.save_data['last_received_item'] = struct.unpack('>i', sram[0x08:0x0C])[0]
+            ret['last_received_item'] = struct.unpack('>i', sram[0x08:0x0C])[0]
             for i in range(9):
-                self.save_data['stages_cleared'][STAGES[i]] = sram[0x0C+i] > 0
+                ret['stages_cleared'][STAGES[i]] = sram[0x0C+i] > 0
             for i in range(8):
-                if self.stage_objects_start_loc_idx[i] == -1:
+                if GameInterface.stage_objects_start_loc_idx[i] == -1:
                     continue
                 tmp = struct.unpack('>H', sram[0x18+i*2:0x18+(i+1)*2])[0]
                 for j in range(15):
                     if tmp & 1 == 1:
-                        self.save_data['stages_objects_cleared'][STAGES[i]].append(self.stage_objects_start_loc_idx[i] + j)
+                        cast(list[int], cast(object, ret['stages_objects_cleared'][STAGES[i]])).append(GameInterface.stage_objects_start_loc_idx[i] + j)
                     tmp >>= 1
                     # no need to check further if the value is already 0
                     if tmp == 0:
                         break
-            self.save_data['deathl']['in'] = sram[0x29]
-            self.save_data['deathl']['out'] = sram[0x2A]
-            self.save_data['deaths'] = sram[0x2B]
+            ret['deathl']['in'] = sram[0x29]
+            ret['deathl']['out'] = sram[0x2A]
+            ret['deaths'] = sram[0x2B]
 
             slot = struct.unpack('>h', sram[0x04:0x06])[0]
             if slot <= 0:
-                return False
+                return None
 
-            self.save_data['slot'] = slot
+            ret['slot'] = slot
 
             seed_name_length = struct.unpack('>h', sram[0x2B:0x2D])[0]
 
             if seed_name_length == 0:
-                self.save_data['seed_name'] = ''
-                return False
+                ret['seed_name'] = ''
+                return None
 
             seed_name = sram[0x2D:0x6C].decode('utf-8').rstrip('\0')
             if len(seed_name) == 0:
-                return False
+                return None
 
-            self.save_data['seed_name'] = seed_name
-            return True
-        except ConnectorError:
+            ret['seed_name'] = seed_name
+            return ret
+        except bizhawk.ConnectorError:
             return None
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             return None
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             return None
-        except SyncError:
+        except bizhawk.SyncError:
             return None
 
-    async def reset_sram_datas(self) -> None:
+    @staticmethod
+    async def reset_sram_datas(ctx) -> None:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0, list(b'\0\0\0\0'), 'SRAM'),
             ])
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
 
-    async def sync_checks(self) -> None:
+    @staticmethod
+    async def sync_checks(ctx) -> None:
+        if ctx.save_data is None:
+            return
+
         try:
             stages_cleared = [0] * 9
             for i in range(9):
-                if self.save_data['stages_cleared'][STAGES[i]]:
+                if ctx.save_data['stages_cleared'][STAGES[i]]:
                     stages_cleared[i] = 1
 
             stages_objects_cleared = [0] * 16
             for i in range(8):
-                if self.stage_objects_start_loc_idx[i] == -1:
+                if GameInterface.stage_objects_start_loc_idx[i] == -1:
                     continue
                 tmp = 0
-                for stage_object in self.save_data['stages_objects_cleared'][STAGES[i]]:
-                    tmp |= (1 << (stage_object - self.stage_objects_start_loc_idx[i]))
+                for stage_object in ctx.save_data['stages_objects_cleared'][STAGES[i]]:
+                    tmp |= (1 << (stage_object - GameInterface.stage_objects_start_loc_idx[i]))
                 tmp2 = struct.pack('>h', tmp)
                 stages_objects_cleared[i * 2] = tmp2[0]
                 stages_objects_cleared[i * 2 + 1] = tmp2[1]
 
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xC, stages_cleared, 'SRAM'),
                 (0x18, stages_objects_cleared, 'SRAM'),
             ])
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
 
 
-    async def write_last_received_item(self, last_received_item: int) -> None:
+    @staticmethod
+    async def write_last_received_item(ctx, last_received_item: int) -> None:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (8, struct.pack('>i', last_received_item), 'SRAM'),
             ])
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
 
-    async def go_to_1player(self) -> None:
+    @staticmethod
+    async def go_to_1player(ctx) -> None:
         try:
-            current_stage = await self.get_current_stage()
+            current_stage = await GameInterface.get_current_stage(ctx)
 
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFF18, [1], '68K RAM'), # Set to 1 player
                 (0xFF21, [0 if current_stage == 8 else 1], '68K RAM')
             ])
-            await self.set_game_status(0x20)
-        except ConnectorError:
+            await GameInterface.set_game_status(ctx, 0x20)
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
 
-    async def display_message(self, msg: str) -> None:
-        await bizhawk_display_msg(self.ctx.bizhawk_ctx, msg)
-
-    async def connect(self):
+    @staticmethod
+    async def display_message(ctx, msg: str) -> None:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.display_message(ctx.bizhawk_ctx, msg)
+        except bizhawk.ConnectorError:
+            pass
+        except bizhawk.NotConnectedError:
+            pass
+        except bizhawk.RequestFailedError:
+            pass
+        except bizhawk.SyncError:
+            pass
+
+    @staticmethod
+    async def connect(ctx) -> None:
+        try:
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFFFE, [1], '68K RAM'),
             ])
-        except ConnectorError:
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
 
-    async def disconnect(self):
+    @staticmethod
+    async def set_message_interval(ctx, value: int) -> None:
         try:
-            await bizhawk_write(self.ctx.bizhawk_ctx, [
+            await bizhawk.set_message_interval(ctx.bizhawk_ctx, value)
+        except bizhawk.ConnectorError:
+            pass
+        except bizhawk.NotConnectedError:
+            pass
+        except bizhawk.RequestFailedError:
+            pass
+        except bizhawk.SyncError:
+            pass
+
+    @staticmethod
+    async def disconnect(ctx) -> None:
+        try:
+            await bizhawk.write(ctx.bizhawk_ctx, [
                 (0xFFFE, [0], '68K RAM'),
             ])
-        except ConnectorError:
+            bizhawk.disconnect(ctx.bizhawk_ctx)
+        except bizhawk.ConnectorError:
             pass
-        except NotConnectedError:
+        except bizhawk.NotConnectedError:
             pass
-        except RequestFailedError:
+        except bizhawk.RequestFailedError:
             pass
-        except SyncError:
+        except bizhawk.SyncError:
             pass
