@@ -123,7 +123,7 @@ function cp_data() {
   local root="$1" destdir="$2"
   echo "=> Copying over the extra data"
   cp --verbose ${root}/../LICENSE ${destdir}
-  cp --verbose ${root}/../README.md ${destdir}
+  cp --verbose ${root}/../README.MD ${destdir}
   cp --verbose "${root}/../Streets of Rage.yaml" ${destdir}
 }
 
