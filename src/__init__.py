@@ -66,7 +66,7 @@ class StreetsOfRageWorld(World):
     web = StreetsOfRageWeb()
     required_client_version = (0, 6, 3)
 
-    apworld_version = (0, 0, 2)
+    apworld_version = (0, 0, 3)
     starting_location: str = 'Shopping Mall'
     seed: int
 
