@@ -413,7 +413,7 @@ class StreetsOfRageClient(BizHawkClient):
             # Get Player 1 only
             # noinspection PyBroadException
             try:
-                ctx.players = GameInterface.get_players(ctx)
+                ctx.players = await GameInterface.get_players(ctx)
             except:
                 return
 
