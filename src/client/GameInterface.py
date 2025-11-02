@@ -389,6 +389,9 @@ class GameInterface:
     @staticmethod
     async def is_alive(ctx, player: int) -> bool:
         try:
+            if ctx.players is None or len(ctx.players) == 0:
+                return False
+
             p1 = await GameInterface.get_entity(ctx, ctx.players[player - 1])
             if p1 is None:
                 return False
@@ -426,6 +429,9 @@ class GameInterface:
     @staticmethod
     async def add_health(ctx, player: int, health: int) -> bool:
         try:
+            if ctx.players is None or len(ctx.players) == 0:
+                return False
+
             entity = await GameInterface.get_entity(ctx, ctx.players[player - 1]['address'])
 
             if entity is None:
