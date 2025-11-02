@@ -392,7 +392,7 @@ class GameInterface:
             if ctx.players is None or len(ctx.players) == 0:
                 return False
 
-            p1 = await GameInterface.get_entity(ctx, ctx.players[player - 1])
+            p1 = await GameInterface.get_entity(ctx, ctx.players[player - 1]['address'])
             if p1 is None:
                 return False
 
