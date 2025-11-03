@@ -16,11 +16,12 @@ from .Items import StreetsOfRageItem
 from .Options import StreetsOfRageOptions, streets_of_rage_option_groups
 from .Rom import StreetsOfRageProcedurePatch
 from .Settings import StreetsOfRageSettings
-from .Utils import items_start_id, locations_start_id, STAGES
-
-logger = logging.getLogger("Streets of Rage")
+from .Utils import items_start_id, locations_start_id, STAGES, VERSION
 
 from . import client
+
+
+logger = logging.getLogger("Streets of Rage")
 
 
 # Will be removed once merged into Archipelago repo
@@ -66,7 +67,6 @@ class StreetsOfRageWorld(World):
     web = StreetsOfRageWeb()
     required_client_version = (0, 6, 3)
 
-    apworld_version = (0, 0, 4)
     starting_location: str = 'Shopping Mall'
     seed: int
 
@@ -74,6 +74,10 @@ class StreetsOfRageWorld(World):
         super().__init__(multiworld, player)
 
         assert_apworld_properly_installed()
+
+    @classmethod
+    def stage_assert_generate(cls, multiworld: MultiWorld) -> None:
+        logger.info(f"Streets of Rage APWorld v{VERSION} used for generation.")
 
     def generate_early(self) -> None:
         self.seed = self.random.randrange(99999999)
@@ -211,7 +215,8 @@ class StreetsOfRageWorld(World):
             "death_link", "death_traps", "game_over_traps", "stages_to_clear", "start_location"
         )
         options_dict.update({
-            "seed": self.seed
+            "seed": self.seed,
+            "generated_version": VERSION,
         })
         return options_dict
 

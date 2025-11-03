@@ -1,8 +1,8 @@
 import logging
-from typing import Any, Callable, cast, List, Optional, TYPE_CHECKING
+from typing import Callable, Optional, TYPE_CHECKING
 
 from .GameInterface import GameInterface
-from ..Utils import get_attempted_command, items_start_id, locations_start_id, MAGIC_EMPTY_SEED, STAGES
+from ..Utils import get_attempted_command, items_start_id, locations_start_id, MAGIC_EMPTY_SEED, STAGES, VERSION
 
 from NetUtils import ClientStatus, RawJSONtoTextParser
 
@@ -48,6 +48,7 @@ class StreetsOfRageClient(BizHawkClient):
     disconnect_pending: bool = False
     game = 'Streets of Rage'
     game_state: bool = False
+    generated_version: Optional[str] = None
     has_new_checks: bool = False
     ctx: Optional["BizHawkClientContext"] = None
     on_print_json_orig: Callable[[dict], None]
@@ -168,6 +169,11 @@ class StreetsOfRageClient(BizHawkClient):
                 if args['item'].player == ctx.slot:
                     ctx.notifications.append(RawJSONtoTextParser(ctx)(args["data"])) # type: ignore
             if args['type'] == 'Tutorial':
+                if ctx.slot_data is not None and 'generated_version' in ctx.slot_data.keys():
+                    logger.info(f"Streets of Rage APWorld v{ctx.slot_data['generated_version']} used for generation.")
+                else:
+                    logger.info(f"Streets of Rage APWorld lower than v0.0.4 used for generation.")
+                logger.info(f"Streets of Rage APWorld v{VERSION} used for patching.")
                 display_stages_access(ctx) # type: ignore
 
         # noinspection PyTypeChecker
