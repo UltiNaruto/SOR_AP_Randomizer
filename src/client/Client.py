@@ -39,7 +39,7 @@ def display_stages_access(ctx):
     for i in range(8):
         item_id = items_start_id() + 12 + i
         if item_id in items_received:
-            logger.info(f'- {STAGES[i]}')
+            logger.info(f'- {STAGES[i]} (Stage {i+1})')
 
 
 class StreetsOfRageClient(BizHawkClient):
