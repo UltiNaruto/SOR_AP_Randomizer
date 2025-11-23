@@ -462,6 +462,17 @@ class GameInterface:
                 'last_received_item': -1,
                 'seed_name': MAGIC_EMPTY_SEED if ctx.remote_seed_name is None else ctx.remote_seed_name,
                 'slot': -1 if ctx.slot is None else ctx.slot,
+                'stage_keys': {
+                    'Shopping Mall': False,
+                    'Inner City Slums': False,
+                    'Beachside': False,
+                    'Bridge Under Construction': False,
+                    'Aboard The Ferry': False,
+                    'Factory': False,
+                    'Elevator': False,
+                    'Syndicate Mansion': False,
+                    'Mr. X': False,
+                },
                 'stages_cleared': {
                     'Shopping Mall': False,
                     'Inner City Slums': False,
@@ -486,7 +497,7 @@ class GameInterface:
             }
 
             sram_read_request: list[bytes] = await bizhawk.read(ctx.bizhawk_ctx, [
-                (0, 0x6C, 'SRAM'),   # magic word
+                (0, 0x78, 'SRAM'),   # magic word
             ])
 
             if len(sram_read_request) != 1:
@@ -510,9 +521,11 @@ class GameInterface:
                     # no need to check further if the value is already 0
                     if tmp == 0:
                         break
-            ret['deathl']['in'] = sram[0x29]
-            ret['deathl']['out'] = sram[0x2A]
-            ret['deaths'] = sram[0x2B]
+            for i in range(9):
+                ret['stage_keys'][STAGES[i]] = sram[0x28+i] > 0
+            ret['deathl']['in'] = sram[0x34]
+            ret['deathl']['out'] = sram[0x35]
+            ret['deaths'] = sram[0x36]
 
             slot = struct.unpack('>h', sram[0x04:0x06])[0]
             if slot <= 0:
@@ -520,15 +533,18 @@ class GameInterface:
 
             ret['slot'] = slot
 
-            seed_name_length = struct.unpack('>h', sram[0x2B:0x2D])[0]
+            seed_name_length = struct.unpack('>h', sram[0x37:0x39])[0]
 
             if seed_name_length == 0:
                 ret['seed_name'] = ''
                 return None
 
-            seed_name = sram[0x2D:0x6C].decode('utf-8').rstrip('\0')
+            seed_name = sram[0x39:0x78].decode('utf-8').rstrip('\0')
             if len(seed_name) == 0:
                 return None
+
+            if len(seed_name) != seed_name_length:
+                raise RuntimeError(f'Mismatched length for seed name ({len(seed_name)} != {seed_name_length})')
 
             ret['seed_name'] = seed_name
             return ret
@@ -546,6 +562,29 @@ class GameInterface:
         try:
             await bizhawk.write(ctx.bizhawk_ctx, [
                 (0, list(b'\0\0\0\0'), 'SRAM'),
+            ])
+        except bizhawk.ConnectorError:
+            pass
+        except bizhawk.NotConnectedError:
+            pass
+        except bizhawk.RequestFailedError:
+            pass
+        except bizhawk.SyncError:
+            pass
+
+    @staticmethod
+    async def sync_stage_keys(ctx) -> None:
+        if ctx.save_data is None:
+            return
+
+        try:
+            stage_keys = [0] * 9
+            for i in range(9):
+                if ctx.save_data['stage_keys'][STAGES[i]]:
+                    stage_keys[i] = 1
+
+            await bizhawk.write(ctx.bizhawk_ctx, [
+                (0x28, stage_keys, 'SRAM'),
             ])
         except bizhawk.ConnectorError:
             pass
@@ -640,40 +679,9 @@ class GameInterface:
             pass
 
     @staticmethod
-    async def connect(ctx) -> None:
-        try:
-            await bizhawk.write(ctx.bizhawk_ctx, [
-                (0xFFFE, [1], '68K RAM'),
-            ])
-        except bizhawk.ConnectorError:
-            pass
-        except bizhawk.NotConnectedError:
-            pass
-        except bizhawk.RequestFailedError:
-            pass
-        except bizhawk.SyncError:
-            pass
-
-    @staticmethod
     async def set_message_interval(ctx, value: int) -> None:
         try:
             await bizhawk.set_message_interval(ctx.bizhawk_ctx, value)
-        except bizhawk.ConnectorError:
-            pass
-        except bizhawk.NotConnectedError:
-            pass
-        except bizhawk.RequestFailedError:
-            pass
-        except bizhawk.SyncError:
-            pass
-
-    @staticmethod
-    async def disconnect(ctx) -> None:
-        try:
-            await bizhawk.write(ctx.bizhawk_ctx, [
-                (0xFFFE, [0], '68K RAM'),
-            ])
-            bizhawk.disconnect(ctx.bizhawk_ctx)
         except bizhawk.ConnectorError:
             pass
         except bizhawk.NotConnectedError:

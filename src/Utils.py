@@ -2,7 +2,7 @@ import re
 from typing import Optional
 
 MAGIC_EMPTY_SEED = ' ' * 20
-VERSION = "0.0.4"
+VERSION = "0.1.0"
 
 STAGES: list[str] = [
     'Shopping Mall',

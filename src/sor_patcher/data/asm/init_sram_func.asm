@@ -1,4 +1,4 @@
-    ORG     $0007FF6C
+    ORG     $0007FF10
     movem.l a6-a0/d7-d0, -(SP)       ; save all registers to stack
     move.b  #1, (0x00A130F1).l       ; enable SRAM reading/writing
 
@@ -18,7 +18,7 @@ read_magic_word:
 
     ; for loop to reset the seed name
     lea     (0x000E0048).l, A2       ; move constants address to A0
-    lea     (0x0020002D).l, A0       ; pointer to SRAM at the offset of seed name
+    lea     (0x00200039).l, A0       ; pointer to SRAM at the offset of seed name
     move.l  #0x3F, D0
 reset_seed_name:
     move.b  (A2)+, D1
@@ -32,7 +32,7 @@ reset_seed_name:
 
     ; write seed name length to SRAM
     move.l  0x44(A2), D0             ; read length of seed name
-    lea     (0x0020002C).l, A0
+    lea     (0x00200038).l, A0
     move.l  #1, D7
 write_seed_name_length:
     jsr     fix_address
@@ -41,15 +41,15 @@ write_seed_name_length:
     subq.l  #1, A0
     dbf     D7, write_seed_name_length
 
-    lea     (0x00200018).l, A0
-    move.l  #18, D0
+    lea     (0x00200034).l, A0
+    move.l  #2, D0
 loop:
     jsr     fix_address
     move.b  #0, (A1)
     addq.l  #1, A0
     dbf     D0, loop
 
-    lea     (0x00200015).l, A0
+    lea     (0x00200031).l, A0
     move.l  #2, D0
 loop2:
     jsr     fix_address
@@ -57,25 +57,41 @@ loop2:
     addq.l  #1, A0
     dbf     D0, loop2
 
-    lea     (0x0020000C).l, A0
-    move.l  #8, D0
+    lea     (0x00200018).l, A0
+    move.l  #24, D0
 loop3:
     jsr     fix_address
     move.b  #0, (A1)
     addq.l  #1, A0
     dbf     D0, loop3
 
-    lea     (0x00200006).l, A0
-    move.l  #5, D0
+    lea     (0x00200015).l, A0
+    move.l  #2, D0
 loop4:
     jsr     fix_address
     move.b  #0xFF, (A1)
     addq.l  #1, A0
     dbf     D0, loop4
 
+    lea     (0x0020000C).l, A0
+    move.l  #8, D0
+loop5:
+    jsr     fix_address
+    move.b  #0, (A1)
+    addq.l  #1, A0
+    dbf     D0, loop5
+
+    lea     (0x00200006).l, A0
+    move.l  #5, D0
+loop6:
+    jsr     fix_address
+    move.b  #0xFF, (A1)
+    addq.l  #1, A0
+    dbf     D0, loop6
+
     ; write slot number to SRAM
     lea     (0x00200005).l, A0
-    move.w  0x42(A2), D0             ; read length of seed name
+    move.w  0x42(A2), D0             ; read slot number
     move.l  #1, D7
 write_slot_number:
     jsr     fix_address

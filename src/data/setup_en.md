@@ -3,7 +3,9 @@
 - A Megadrive/Genesis rom of Streets of Rage 1 (W) (REV00). For now, no other versions are supported.
 There's no plans for Game Gear/Master System versions at all.
 
-- BizHawk (recommended 2.9.1 since I used it for tests)
+- BizHawk :
+  - 2.7
+  - 2.9.1 (recommended since I use it for tests)
 
 ## Setup
 

@@ -59,7 +59,7 @@ class StreetsOfRageClient(BizHawkClient):
             '!keys',
         ]
 
-        if self.ctx is not None:
+        if self.ctx is not None and 'type' in args.keys():
             if args['type'] == 'Chat':
                 text = RawJSONtoTextParser(self.ctx)(args["data"])
                 if text.startswith(self.ctx.auth):
@@ -272,8 +272,10 @@ class StreetsOfRageClient(BizHawkClient):
             # Stage key received
             if 12 <= idx <= 19:
                 key_idx = idx - 12
-                if not ctx.stage_keys[STAGES[key_idx]]:
-                    ctx.stage_keys[STAGES[key_idx]] = True
+                ctx.stage_keys[STAGES[key_idx]] = True
+                if not ctx.save_data['stage_keys'][STAGES[key_idx]]:
+                    ctx.save_data['stage_keys'][STAGES[key_idx]] = True
+                    await GameInterface.sync_stage_keys(ctx)
 
             # Do not receive the same item twice
             if it_idx <= ctx.save_data['last_received_item']:
@@ -285,6 +287,15 @@ class StreetsOfRageClient(BizHawkClient):
             # Set last received item
             ctx.save_data['last_received_item'] = it_idx
             await GameInterface.write_last_received_item(ctx, it_idx)
+
+        stage_cleared_count = sum([1 for _, sc in ctx.save_data['stages_cleared'].items() if sc])
+        stages_to_clear = ctx.slot_data.get('stages_to_clear', 8)
+        if stage_cleared_count >= stages_to_clear:
+            key_idx = 8
+            ctx.stage_keys[STAGES[key_idx]] = True
+            if not ctx.save_data['stage_keys'][STAGES[key_idx]]:
+                ctx.save_data['stage_keys'][STAGES[key_idx]] = True
+                await GameInterface.sync_stage_keys(ctx)
 
     @staticmethod
     async def handle_locations(ctx) -> None:
@@ -340,11 +351,7 @@ class StreetsOfRageClient(BizHawkClient):
         if requested_stage is not None and requested_stage > 0:
             if requested_stage < 9:
                 stage_name = STAGES[requested_stage - 1]
-                if ctx.stage_keys[stage_name]:
-                    await GameInterface.set_requested_stage_response(ctx, 0xFF)
-                    await GameInterface.go_to_1player(ctx)
-                else:
-                    await GameInterface.set_requested_stage_response(ctx, 0)
+                if not ctx.stage_keys[stage_name]:
                     await GameInterface.display_message(ctx, f"You don't have the key for {stage_name} stage")
             else:
                 stage_cleared_count = sum([1 for _, sc in ctx.save_data['stages_cleared'].items() if sc])
@@ -353,11 +360,9 @@ class StreetsOfRageClient(BizHawkClient):
                     stage_cleared_count += 1
                 stages_to_clear = ctx.slot_data.get('stages_to_clear', 8)
                 left_to_clear = max(0, stages_to_clear - stage_cleared_count)
-                if left_to_clear == 0:
-                    await GameInterface.set_requested_stage_response(ctx, 0xFF)
-                else:
-                    await GameInterface.set_requested_stage_response(ctx, 0)
+                if left_to_clear > 0:
                     await GameInterface.display_message(ctx, f"You need to beat {left_to_clear} more stage{('s' if left_to_clear > 1 else '')}")
+            await GameInterface.set_requested_stage_response(ctx, 0)
 
     async def game_watcher(self, ctx) -> None:
         game_status = await GameInterface.get_game_status(ctx)
@@ -380,10 +385,7 @@ class StreetsOfRageClient(BizHawkClient):
         if ctx.save_data['seed_name'] != ctx.remote_seed_name or \
            ctx.save_data['slot'] != ctx.slot:
             await ctx.server.socket.close()
-            await GameInterface.disconnect(ctx)
             return
-
-        await GameInterface.connect(ctx)
 
         if game_status < 0x10:
             GameInterface.was_alive = False

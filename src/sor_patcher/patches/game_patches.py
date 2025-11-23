@@ -1,12 +1,12 @@
 import io
 from typing import Any
 
+from .base_patches.constants import ConstantsPatch
+from .base_patches.randomizer_loop import RandomizerLoop
+from .base_patches.skip_to_options import SkipToOptions
+from .base_patches.sram_patch import SRAMPatch
+from .base_patches.utils_functions import UtilsFunctions
 from ..file_formats.smd import SMD
-from ..patches.base_patches.constants import ConstantsPatch
-from ..patches.base_patches.randomizer_loop import RandomizerLoop
-from ..patches.base_patches.skip_to_options import SkipToOptions
-from ..patches.base_patches.sram_patch import SRAMPatch
-from ..patches.base_patches.timeout_client_func import TimeoutClientFunc
 from ..utils.buffered_reader_be import BufferedReaderBE
 from ..utils.buffered_writer_be import BufferedWriterBE
 
@@ -40,6 +40,7 @@ def apply_patches(config: dict[str, Any]) -> None:
     smd.datas += b'\xFF' * 0x80000
 
     PATCHES_TO_APPLY = [
+        UtilsFunctions(),
         ConstantsPatch(
             config.get('seed_name', ''),
             config.get('slot_index', 0),
@@ -47,7 +48,6 @@ def apply_patches(config: dict[str, Any]) -> None:
         ),
         SRAMPatch(),
         SkipToOptions(),
-        TimeoutClientFunc(),
         RandomizerLoop(),
     ]
 
