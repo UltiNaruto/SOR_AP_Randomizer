@@ -33,8 +33,6 @@ def apply_patches(config: dict[str, Any]) -> None:
         case _:
             raise RuntimeError("Unsupported game. Only first Streets of Rage/Bare Knuckle game of the serie is supported!")
 
-    # TODO: if game_version not w_rev00 then use bsdiff patch on known versions and reread the newly patched file
-
     # required by custom code
     smd.header.rom_address_range.end += 0x80000
     smd.datas += b'\xFF' * 0x80000

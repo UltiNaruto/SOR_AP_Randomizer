@@ -1,7 +1,11 @@
+import bsdiff4
 import hashlib
 import json
 import os
+import pkgutil
 import tempfile
+
+from typing import Mapping
 
 from .sor_patcher.patcher import patch as sor_patch
 
@@ -9,9 +13,28 @@ import Utils
 from settings import get_settings
 from ..Files import APProcedurePatch, APPatchExtension
 
+
+PATCH_FOR_VERSION: Mapping[str, str] = {
+    # SOR 1 Megadrive - SEGA Mega Drive & Genesis Classic (3DS)
+    '0de64a4f7dd5b0f11fbeea8c2c83f253': 'md_gen_classic_3ds',
+
+    # SOR 1 Megadrive - SEGA Mega Drive & Genesis Classic (Steam)
+    '59a3b22a1899461dceba50d1ade88d3a': 'md_gen_classic_steam',
+}
+
+
 def get_base_rom_as_bytes() -> bytes:
     with open(get_settings().streets_of_rage_settings.rom_file, "rb") as infile:
         base_rom_bytes = bytes(Utils.read_snes_rom(infile))
+
+    input_md5 = hashlib.md5(base_rom_bytes).hexdigest()
+
+    if input_md5 in PATCH_FOR_VERSION.keys():
+        base_rom_bytes = bsdiff4.patch(
+            base_rom_bytes,
+            pkgutil.get_data(__name__[:__name__.rfind('.')], f'data/patches/{PATCH_FOR_VERSION[input_md5]}.bsdiff4')
+        )
+
     return base_rom_bytes
 
 
@@ -23,16 +46,25 @@ class StreetsOfRageMultiPatch(APPatchExtension):
         input_md5 = hashlib.md5(rom).hexdigest()
         # SOR 1 (W) (REV00) MegaDrive
         if input_md5 == '569cfec15813294a8f0cf88cccc8c151':
-            file_name = get_settings().streets_of_rage_settings['rom_file']
-
             try:
-                fd, tmp_name = tempfile.mkstemp()
+                src_fd, src_name = tempfile.mkstemp()
+                dst_fd, dst_name = tempfile.mkstemp()
+
+                # copy base rom to temp file
+                # will be used as input rom
+                with os.fdopen(src_fd, 'wb') as tmp:
+                    tmp.write(get_base_rom_as_bytes())
+
+                # call patcher with modified paths
                 patcher_json = json.loads(caller.get_file(patcher_file))
-                patcher_json['input_path'] = file_name
-                patcher_json['output_path'] = tmp_name
+                patcher_json['input_path'] = src_name
+                patcher_json['output_path'] = dst_name
                 sor_patch(json.dumps(patcher_json))
-                with os.fdopen(fd, 'rb') as tmp:
+
+                # read patched rom and return it
+                with os.fdopen(dst_fd, 'rb') as tmp:
                     randomized_rom_data = tmp.read()
+
                 return randomized_rom_data
             except:
                 raise
