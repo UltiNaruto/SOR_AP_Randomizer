@@ -168,7 +168,7 @@ function main() {
     local tag="${TAG:-$(date '+%Y-%m-%d_%H%M')}"
     local py_version="${PY_VERSION}"
     local project="$(realpath "${CWD}/../src")"
-    local bundle="${bundle_base}-${tag}-${py_version}"
+    local bundle="${bundle_base}-${tag}"
     local destdir="${target_path}/${bundle}"
     local local_install=false
 
