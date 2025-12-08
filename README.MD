@@ -17,7 +17,7 @@ Any weapon is not spawnable yet, it will change in the future.
 Additionally, you can shuffle traps in the game, such as death traps or even game over traps.
 
 ### What versions of Streets of Rage are supported?
-So far only (W) (REV00) of the MegaDrive release is supported.
+So far only Streets of Rage (W) (REV00), 3D Streets of Rage and SEGA Mega Drive and Genesis Classics from Steam is supported.
 There are no plans of supporting GameGear and Master System versions.
 
 ### Does the randomizer support /collect?
