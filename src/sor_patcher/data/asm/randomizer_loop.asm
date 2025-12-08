@@ -74,10 +74,17 @@ menu_loop:
 skip_drawing_ap_infos:
     cmpi.b  #0x2A, (0x00FFFB0F).l      ; check if we pressed start
     bne.b   menu_loop_ret              ; if not then end the menu loop
+    cmpi.b  #0x26, (0x00FFFFFF).l      ; check if we were on exit
+    beq.b   cancel_exit                ; if yes then cancel the button press and reset screen
+    cmpi.b  #0x28, (0x00FFFFFF).l      ; check if we were on exit (pressed)
+    beq.b   cancel_exit                ; if yes then cancel the button press and reset screen
     cmpi.b  #0x22, (0x00FFFFFF).l      ; check if we were on stage select
     bne.b   cancel_start_press         ; if not then cancel the button press
     move.b  (0x00FFFF03).l, D1         ; move current stage to D1
     jsr     request_stage_change       ; request level change to the client
+    jmp     menu_loop_ret              ; end the menu loop
+cancel_exit:
+    move.b  #0x10, (0x00FFFF01).l      ; set menu type to main menu
     jmp     menu_loop_ret              ; end the menu loop
 cancel_start_press:
     move.b  (0x00FFFFFF).l, D1         ; backup menu state to D1
@@ -441,6 +448,7 @@ request_stage_change:
     cmpi.b  #1, D0                     ; check if we have the key
     beq.b   has_key                    ; if we have the key then we can load the stage
     move.b  #0x22, (0x00FFFB0F).l      ; set menu state to stage select
+    move.b  #0xBA, (0x00FFF00A).l      ; play menu select SFX
     jmp     end_of_request_stage       ; done with requesting a change
 has_key:
     move.b  #1, (0x00FFFF18).l         ; set to 1 player mode
