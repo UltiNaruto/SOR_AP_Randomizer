@@ -1,5 +1,4 @@
 from ...Items import StreetsOfRageItem
-from ...Locations import StreetsOfRageLocation
 from ...Regions import StreetsOfRageRegion
 
 from BaseClasses import MultiWorld, ItemClassification
@@ -15,56 +14,38 @@ class AboardTheFerry(StreetsOfRageRegion):
             'Aboard The Ferry (Stage Clear)': lambda state, player: True,
         })
 
-        self.locations = [
-            StreetsOfRageLocation(
-                name='Double Wooden Wall Container 1 (1000 Points)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Double Wooden Wall Container 2 (Sleeping Powder)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Double Wooden Wall Container 3 (1000 Points)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Double Wooden Wall Container 4 (Apple)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='First Ladder Container (Chicken)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Before Second Ladder Container (Chicken)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Before Boss Container (Police)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Boss Container (Chicken)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-        ]
+        self.add_location(
+            'Double Wooden Wall Container 1 (1000 Points)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Double Wooden Wall Container 2 (Sleeping Powder)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Double Wooden Wall Container 3 (1000 Points)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Double Wooden Wall Container 4 (Apple)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'First Ladder Container (Chicken)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Before Second Ladder Container (Chicken)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Before Boss Container (Police)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Boss Container (Chicken)',
+            lambda state, player: True,
+        )
 
 
 # noinspection PyShadowingNames
@@ -76,23 +57,17 @@ class AboardTheFerry_StageClear(StreetsOfRageRegion):
             'Menu': lambda state, player: True,
         })
 
-        self.locations = [
-            StreetsOfRageLocation(
-                name='Stage Clear (Factory Key)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
+        self.add_location(
+            'Stage Clear (Factory Key)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Aboard The Ferry Boss Beaten',
+            lambda state, player: True,
+            locked_item=StreetsOfRageItem(
+                name='Stage Clear',
+                classification=ItemClassification.progression,
+                code=None,
+                player=player,
             ),
-            StreetsOfRageLocation(
-                name='Aboard The Ferry Boss Beaten',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-                locked_item=StreetsOfRageItem(
-                    name='Stage Clear',
-                    classification=ItemClassification.progression,
-                    code=None,
-                    player=player,
-                ),
-            ),
-        ]
+        )

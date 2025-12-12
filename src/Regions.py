@@ -1,6 +1,12 @@
-from typing import Callable, Optional
+from .Locations import StreetsOfRageLocation
+
+from typing import Callable, Optional, TYPE_CHECKING
 
 from BaseClasses import CollectionState, Region, MultiWorld
+
+
+if TYPE_CHECKING:
+    from .Items import StreetsOfRageItem
 
 
 class StreetsOfRageRegion(Region):
@@ -16,3 +22,12 @@ class StreetsOfRageRegion(Region):
             super().__init__(f"{self.name} ({self.desc})", player, multiworld)
         else:
             super().__init__(f"{self.name}", player, multiworld)
+
+    def add_location(self, name: str, can_access: Callable[[CollectionState, int], bool], locked_item: Optional["StreetsOfRageItem"]=None) -> None:
+        self.locations += [StreetsOfRageLocation(
+            name,
+            self.stage,
+            can_access,
+            self,
+            locked_item,
+        )]

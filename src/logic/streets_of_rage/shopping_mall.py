@@ -1,5 +1,4 @@
 from ...Items import StreetsOfRageItem
-from ...Locations import StreetsOfRageLocation
 from ...Regions import StreetsOfRageRegion
 
 from BaseClasses import MultiWorld, ItemClassification
@@ -15,50 +14,34 @@ class ShoppingMall(StreetsOfRageRegion):
             'Shopping Mall (Stage Clear)': lambda state, player: True,
         })
 
-        self.locations = [
-            StreetsOfRageLocation(
-                name='Rach Shop Phone Booth 1 (Apple)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Rach Shop Phone Booth 2 (Bottle)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Rach Shop Phone Booth 3 (Pipe)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='ABC Shop Phone Booth 1 (Nothing)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='ABC Shop Phone Booth 2 (Bottle)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='ABC Shop Phone Booth 3 (Nothing)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Boss Phone Booth (Chicken)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-        ]
+        self.add_location(
+            'Rach Shop Phone Booth 1 (Apple)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Rach Shop Phone Booth 2 (Bottle)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Rach Shop Phone Booth 3 (Pipe)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'ABC Shop Phone Booth 1 (Nothing)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'ABC Shop Phone Booth 2 (Bottle)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'ABC Shop Phone Booth 3 (Nothing)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Boss Phone Booth (Chicken)',
+            lambda state, player: True,
+        )
 
 
 # noinspection PyShadowingNames
@@ -70,23 +53,17 @@ class ShoppingMall_StageClear(StreetsOfRageRegion):
             'Menu': lambda state, player: True,
         })
 
-        self.locations = [
-            StreetsOfRageLocation(
-                name='Stage Clear (Inner City Slums Key)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
+        self.add_location(
+            'Stage Clear (Inner City Slums Key)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Shopping Mall Boss Beaten',
+            lambda state, player: True,
+            locked_item=StreetsOfRageItem(
+                name='Stage Clear',
+                classification=ItemClassification.progression,
+                code=None,
+                player=player,
             ),
-            StreetsOfRageLocation(
-                name='Shopping Mall Boss Beaten',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-                locked_item=StreetsOfRageItem(
-                    name='Stage Clear',
-                    classification=ItemClassification.progression,
-                    code=None,
-                    player=player,
-                ),
-            ),
-        ]
+        )

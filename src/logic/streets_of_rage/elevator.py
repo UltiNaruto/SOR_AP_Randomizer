@@ -1,5 +1,4 @@
 from ...Items import StreetsOfRageItem
-from ...Locations import StreetsOfRageLocation
 from ...Regions import StreetsOfRageRegion
 
 from BaseClasses import MultiWorld, ItemClassification
@@ -25,23 +24,17 @@ class Elevator_StageClear(StreetsOfRageRegion):
             'Menu': lambda state, player: True,
         })
 
-        self.locations = [
-            StreetsOfRageLocation(
-                name='Stage Clear (Syndicate Mansion Key)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
+        self.add_location(
+            'Stage Clear (Syndicate Mansion Key)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Elevator Stage Clear',
+            lambda state, player: True,
+            StreetsOfRageItem(
+                name='Stage Clear',
+                classification=ItemClassification.progression,
+                code=None,
+                player=player,
             ),
-            StreetsOfRageLocation(
-                name='Elevator Stage Clear',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-                locked_item=StreetsOfRageItem(
-                    name='Stage Clear',
-                    classification=ItemClassification.progression,
-                    code=None,
-                    player=player,
-                ),
-            ),
-        ]
+        )

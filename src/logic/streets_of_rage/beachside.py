@@ -1,5 +1,4 @@
 from ...Items import StreetsOfRageItem
-from ...Locations import StreetsOfRageLocation
 from ...Regions import StreetsOfRageRegion
 
 from BaseClasses import MultiWorld, ItemClassification
@@ -15,32 +14,22 @@ class Beachside(StreetsOfRageRegion):
             'Beachside (Stage Clear)': lambda state, player: True,
         })
 
-        self.locations = [
-            StreetsOfRageLocation(
-                name='Before First Projector Tires (Baseball Bat)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Third Fence Tires 1 (Apple)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Third Fence Tires 2 (1000 Points)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-            StreetsOfRageLocation(
-                name='Third Fence Tires 3 (Chicken)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-            ),
-        ]
+        self.add_location(
+            'Before First Projector Tires (Baseball Bat)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Third Fence Tires 1 (Apple)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Third Fence Tires 2 (1000 Points)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Third Fence Tires 3 (Chicken)',
+            lambda state, player: True,
+        )
 
 
 # noinspection PyShadowingNames
@@ -52,23 +41,17 @@ class Beachside_StageClear(StreetsOfRageRegion):
             'Menu': lambda state, player: True,
         })
 
-        self.locations = [
-            StreetsOfRageLocation(
-                name='Stage Clear (Bridge Under Construction Key)',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
+        self.add_location(
+            'Stage Clear (Bridge Under Construction Key)',
+            lambda state, player: True,
+        )
+        self.add_location(
+            'Beachside Boss Beaten',
+            lambda state, player: True,
+            StreetsOfRageItem(
+                name='Stage Clear',
+                classification=ItemClassification.progression,
+                code=None,
+                player=player,
             ),
-            StreetsOfRageLocation(
-                name='Beachside Boss Beaten',
-                stage=self.stage,
-                can_access=lambda state, player: True,
-                parent=self,
-                locked_item=StreetsOfRageItem(
-                    name='Stage Clear',
-                    classification=ItemClassification.progression,
-                    code=None,
-                    player=player,
-                ),
-            ),
-        ]
+        )

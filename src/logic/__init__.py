@@ -1,102 +1,22 @@
-from typing import Callable, Type
+import sys
+from typing import Callable, Optional, Type
 
-from .streets_of_rage.aboard_the_ferry import (
-    AboardTheFerry,
-    AboardTheFerry_StageClear,
-)
-from .streets_of_rage.beachside import (
-    Beachside,
-    Beachside_StageClear,
-)
-from .streets_of_rage.bridge_under_construction import (
-    BridgeUnderConstruction,
-    BridgeUnderConstruction_StageClear,
-)
-from .streets_of_rage.elevator import (
-    Elevator,
-    Elevator_StageClear,
-)
-from .streets_of_rage.factory import (
-    Factory,
-    Factory_StageClear,
-)
-from .streets_of_rage.inner_city_slums import (
-    InnerCitySlums,
-    InnerCitySlums_StageClear,
-)
-from .streets_of_rage.menu import (
-    AboardTheFerryGate,
-    BeachsideGate,
-    BridgeUnderConstructionGate,
-    ElevatorGate,
-    FactoryGate,
-    InnerCitySlumsGate,
-    Menu,
-    ShoppingMallGate,
-    SyndicateMansionGate
-)
-from .streets_of_rage.shopping_mall import (
-    ShoppingMall,
-    ShoppingMall_StageClear,
-)
-from .streets_of_rage.syndicate_mansion import (
-    SyndicateMansion,
-    SyndicateMansion_Twins,
-    SyndicateMansion_MrX,
-)
 from ..Regions import StreetsOfRageRegion
+from ..Utils import get_all_classes_from_parent_module
 
 from BaseClasses import CollectionState, Entrance, MultiWorld
 from ...generic.Rules import set_rule
 
 
-def regions_(player:int, multiworld: MultiWorld) -> dict[str, StreetsOfRageRegion]:
+def regions_(player:int, multiworld: Optional[MultiWorld]) -> dict[str, StreetsOfRageRegion]:
+    ret = [
+        r(player, multiworld)
+        for r in get_all_classes_from_parent_module(sys.modules[__name__], type(StreetsOfRageRegion))
+    ]
+
     return {
-        # Shopping Mall (Stage 1)
-        'Shopping Mall': ShoppingMall(player, multiworld),
-        'Shopping Mall (Stage Clear)': ShoppingMall_StageClear(player, multiworld),
-        'Shopping Mall Gate': ShoppingMallGate(player, multiworld),
-
-        # Inner City Slums (Stage 2)
-        'Inner City Slums': InnerCitySlums(player, multiworld),
-        'Inner City Slums (Stage Clear)': InnerCitySlums_StageClear(player, multiworld),
-        'Inner City Slums Gate': InnerCitySlumsGate(player, multiworld),
-
-        # Beachside (Stage 3)
-        'Beachside': Beachside(player, multiworld),
-        'Beachside (Stage Clear)': Beachside_StageClear(player, multiworld),
-        'Beachside Gate': BeachsideGate(player, multiworld),
-
-        # Bridge Under Construction (Stage 4)
-        'Bridge Under Construction': BridgeUnderConstruction(player, multiworld),
-        'Bridge Under Construction (Stage Clear)': BridgeUnderConstruction_StageClear(player, multiworld),
-        'Bridge Under Construction Gate': BridgeUnderConstructionGate(player, multiworld),
-
-        # Aboard The Ferry (Stage 5)
-        'Aboard The Ferry': AboardTheFerry(player, multiworld),
-        'Aboard The Ferry (Stage Clear)': AboardTheFerry_StageClear(player, multiworld),
-        'Aboard The Ferry Gate': AboardTheFerryGate(player, multiworld),
-
-        # Factory (Stage 6)
-        'Factory': Factory(player, multiworld),
-        'Factory (Stage Clear)': Factory_StageClear(player, multiworld),
-        'Factory Gate': FactoryGate(player, multiworld),
-
-        # Elevator (Stage 7)
-        'Elevator': Elevator(player, multiworld),
-        'Elevator (Stage Clear)': Elevator_StageClear(player, multiworld),
-        'Elevator Gate': ElevatorGate(player, multiworld),
-
-        # Syndicate Mansion (Stage 8)
-        'Syndicate Mansion': SyndicateMansion(player, multiworld),
-        'Syndicate Mansion (Twins)': SyndicateMansion_Twins(player, multiworld),
-        'Syndicate Mansion Gate': SyndicateMansionGate(player, multiworld),
-
-        # Mr. X (Stage 9 - Final Boss)
-        'Syndicate Mansion (Mr. X)': SyndicateMansion_MrX(player, multiworld),
-
-        # Stage Selection
-        'Menu': Menu(player, multiworld),
+        region.name: region
+        for region in ret
     }
 
 
