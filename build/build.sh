@@ -110,7 +110,7 @@ function mk_apworld() {
   rm -rf "${destdir}/streets_of_rage/lib"
   mv "${destdir}/lib" "${destdir}/streets_of_rage/lib"
   pushd "${destdir}"
-  zip -9r "streets_of_rage.apworld" "streets_of_rage"
+  zip -9r "streets_of_rage.apworld" "streets_of_rage" -x *.asm
   popd
 
   rm --force --recursive "${destdir}/streets_of_rage"

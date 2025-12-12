@@ -1,6 +1,6 @@
 import struct
 
-from ...data.patches import DATA_SECTION_ADDRESS
+from ...data import DATA_SECTION_ADDRESS
 from ...file_formats.smd import SMD
 from ...patches import Patch
 from ...utils.byteutils import replace_bytes_at

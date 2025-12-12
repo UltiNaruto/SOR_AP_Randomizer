@@ -288,7 +288,7 @@ class SMD(StructParser):
         self.header.checksum = checksum
 
     def patch(self, address: int, asm: bytes) -> None:
-        if 0xfffff < address < 0x200:
+        if self.header.rom_address_range.end < address < 0x200:
             raise RuntimeError(f'Invalid address in ROM! (at: 0x{address:08X})')
 
         self.datas = replace_bytes_at(self.datas, address - 0x200, asm)

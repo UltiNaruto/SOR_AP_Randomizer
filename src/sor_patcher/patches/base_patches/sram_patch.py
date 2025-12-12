@@ -1,13 +1,13 @@
-from ...data.patches import (
-    INIT_SRAM_ADDRESS,
-    INIT_SRAM_BYTES,
-)
+from ...data import PATCHES
 from ...file_formats.smd import RamType, SMD
 from ...patches import Patch
 
 
 class SRAMPatch(Patch):
     def apply(self, smd: SMD) -> None:
+        if "init_sram_func" not in PATCHES.keys():
+            raise RuntimeError("Couldn't find init_sram_func in patches!")
+
         # add SRAM support to save infos between 2 different sessions
         smd.header.serial_number.software_type = 'GM'
         smd.header.extra_memory.magic_number = 'RA'
@@ -17,6 +17,6 @@ class SRAMPatch(Patch):
 
         # adds a function that initializes the SRAM if the magic word is not present
         smd.patch(
-            INIT_SRAM_ADDRESS,
-            INIT_SRAM_BYTES,
+            PATCHES["init_sram_func"]["address"],
+            PATCHES["init_sram_func"]["data"],
         )
