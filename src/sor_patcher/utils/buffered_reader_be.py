@@ -1,8 +1,9 @@
+import _io
 import io
 import struct
 
 from io import BufferedReader, RawIOBase
-from typing import Optional
+from typing import Optional, Union
 
 from .padding import pad
 
@@ -10,7 +11,7 @@ from .padding import pad
 class BufferedReaderBE:
     reader: Optional[BufferedReader] = None
 
-    def __init__(self, f: RawIOBase | io.BytesIO) -> None:
+    def __init__(self, f: Union[_io.BufferedReader, RawIOBase, io.BytesIO]) -> None:
         self.reader = BufferedReader(f)
 
     def read(self, bytes_count: int) -> bytes:

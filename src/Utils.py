@@ -9,7 +9,7 @@ from types import ModuleType
 from typing import Iterable, Optional, TypeVar, Union
 
 MAGIC_EMPTY_SEED = ' ' * 20
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 STAGES: list[str] = [
     'Shopping Mall',

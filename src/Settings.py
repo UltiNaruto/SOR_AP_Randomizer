@@ -1,3 +1,5 @@
+from typing import Union
+
 import settings
 
 
@@ -13,4 +15,8 @@ class StreetsOfRageSettings(settings.Group):
             '59a3b22a1899461dceba50d1ade88d3a', # Steam
         ]
 
+    class StreetsOfRageUsing_2_10_Plus_BizHawkVersion(settings.Bool):
+        """Are you using BizHawk 2.10 or newer?"""
+
     rom_file: StreetsOfRageRomFile = StreetsOfRageRomFile(StreetsOfRageRomFile.copy_to)
+    using_2_10_plus_bizhawk_version: Union[StreetsOfRageUsing_2_10_Plus_BizHawkVersion, bool] = False

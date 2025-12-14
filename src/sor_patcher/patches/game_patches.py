@@ -11,7 +11,7 @@ from ..utils.buffered_reader_be import BufferedReaderBE
 from ..utils.buffered_writer_be import BufferedWriterBE
 
 
-def apply_patches(config: dict[str, Any]) -> None:
+def apply_patches(config: dict[str, Any], bizhawk_version: str) -> None:
     _game_version = '???'
     smd = SMD()
     smd.read(BufferedReaderBE(io.open(config['input_path'], 'rb')))
@@ -44,7 +44,7 @@ def apply_patches(config: dict[str, Any]) -> None:
             config.get('slot_index', 0),
             config.get('easy_mode', False),
         ),
-        SRAMPatch(),
+        SRAMPatch(bizhawk_version),
         SkipToOptions(),
         RandomizerLoop(),
     ]

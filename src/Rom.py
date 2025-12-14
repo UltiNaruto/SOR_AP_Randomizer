@@ -49,6 +49,7 @@ class StreetsOfRageMultiPatch(APPatchExtension):
             try:
                 src_fd, src_name = tempfile.mkstemp()
                 dst_fd, dst_name = tempfile.mkstemp()
+                bizhawk_version = '>=2.10' if get_settings().streets_of_rage_settings.using_2_10_plus_bizhawk_version else '<2.10'
 
                 # copy base rom to temp file
                 # will be used as input rom
@@ -59,7 +60,7 @@ class StreetsOfRageMultiPatch(APPatchExtension):
                 patcher_json = json.loads(caller.get_file(patcher_file))
                 patcher_json['input_path'] = src_name
                 patcher_json['output_path'] = dst_name
-                sor_patch(json.dumps(patcher_json))
+                sor_patch(json.dumps(patcher_json), bizhawk_version)
 
                 # read patched rom and return it
                 with os.fdopen(dst_fd, 'rb') as tmp:

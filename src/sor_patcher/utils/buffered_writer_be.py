@@ -1,9 +1,10 @@
+import _io
 import io
 import math
 import struct
 
 from io import BufferedWriter, RawIOBase
-from typing import Optional
+from typing import Optional, Union
 
 from ..utils.padding import pad
 
@@ -13,7 +14,7 @@ BUF_SIZE = 8192
 class BufferedWriterBE:
     writer: Optional[BufferedWriter] = None
 
-    def __init__(self, f: RawIOBase | io.BytesIO) -> None:
+    def __init__(self, f: Union[_io.BufferedWriter, RawIOBase, io.BytesIO]) -> None:
         self.writer = BufferedWriter(f)
 
     def write(self, datas: bytes) -> None:

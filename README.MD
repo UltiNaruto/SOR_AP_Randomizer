@@ -1,5 +1,5 @@
 # Streets of Rage Archipelago
-An Archipelago implementation of Streets of Rage multiworld randomizer using [sor_patcher](https://github.com/UltiNaruto/sor_patcher/tree/49823de308304f3e45c0d69962b251dff7c5f2f9)
+An Archipelago implementation of Streets of Rage multiworld randomizer using [sor_patcher](https://github.com/UltiNaruto/sor_patcher/tree/c37d5596a919dafcc197cecd453ba762841d4cf8)
 
 ## Setup
 
