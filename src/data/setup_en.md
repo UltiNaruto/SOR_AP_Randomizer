@@ -7,6 +7,8 @@
 - BizHawk :
   - 2.7
   - 2.9.1 (recommended since I use it for tests)
+  - 2.10**
+  - 2.11**
 
 ## Setup
 
@@ -21,4 +23,6 @@ You need to be connected to request to load a stage. Failing to do so will reset
 This is an alpha build and as such you shouldn't expect no bugs.<br>
 Feel free to discuss those bugs in the [Discord thread](https://discord.com/channels/731205301247803413/1421815799504437409)
 
-*: There's no plans for Game Gear/Master System versions at all.
+*: There's no plans for Game Gear/Master System versions at all.<br>
+**: Change `using_2_10_plus_bizhawk_version` in the section `streets_of_rage_settings` of `<Archipelago folder>/host.yaml`.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Note: This doesn't always exist so you need to open a patch for the first time if it doesn't exist.
